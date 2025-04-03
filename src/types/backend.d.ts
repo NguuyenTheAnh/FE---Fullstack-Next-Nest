@@ -19,6 +19,15 @@ declare global {
         data?: T;
     }
 
+    interface ILogin {
+        user: {
+            email: string;
+            _id: string;
+            name: string;
+        };
+        access_token: string;
+    }
+
     interface IModelPaginate<T> {
         meta: {
             current: number;
