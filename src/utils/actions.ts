@@ -11,13 +11,13 @@ export async function authenticate(email: string, password: string) {
         });
         return r;
     } catch (error) {
-        if ((error as any).name = "InvalidEmailPasswordError") {
+        if ((error as any).name == "InvalidEmailPasswordError") {
             return {
                 error: (error as any).type,
                 code: 1
             }
         }
-        else if ((error as any).name = "InactiveAccount") {
+        else if ((error as any).name == "InactiveAccount") {
             return {
                 error: (error as any).type,
                 code: 2

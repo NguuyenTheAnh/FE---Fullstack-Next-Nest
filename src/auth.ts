@@ -17,14 +17,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 // call backend
                 const res = await sendRequest<IBackendRes<ILogin>>({
                     method: "POST",
-                    url: 'http://localhost:8080/api/v1/auth/login',
+                    url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/login`,
                     body: {
                         username: credentials.username,
                         password: credentials.password
                     }
                 });
                 //if only have data (statusCode: 200)
-                if (!res.statusCode) {
+                if (+res.statusCode === 201) {
+                    // result that is returned will be stored in 'user' valuable of callbacks
                     return {
                         _id: res.data?.user._id,
                         email: res.data?.user.email,
@@ -33,11 +34,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     }
                 }
                 // resCode 400: Inactive Account
-                else if (+res.statusCode === 400) {
+                else if (+res.statusCode === 401) {
                     throw new InvalidEmailPasswordError();
                 }
                 // resCode 401: Incorrect Password
-                else if (+res.statusCode === 401) {
+                else if (+res.statusCode === 400) {
                     throw new InactiveAccount();
                 }
                 else {
@@ -60,6 +61,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session({ session, token }) {
             (session.user as IUser) = token.user
             return session
+        },
+        authorized: async ({ auth }) => {
+            // Logged in users are authenticated, otherwise redirect to login page
+            return !!auth
         },
     },
 })

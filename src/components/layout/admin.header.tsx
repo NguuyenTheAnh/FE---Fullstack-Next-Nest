@@ -6,43 +6,23 @@ import { useContext } from 'react';
 import { DownOutlined, SmileOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Dropdown, Space } from 'antd';
+import { signOut, useSession } from 'next-auth/react';
 
-const AdminHeader = () => {
+const AdminHeader = (props: any) => {
+    const { session } = props;
+
     const { Header } = Layout;
     const { collapseMenu, setCollapseMenu } = useContext(AdminContext)!;
 
     const items: MenuProps['items'] = [
         {
             key: '1',
-            label: (
-                <a target="_blank" rel="noopener noreferrer" href="https://www.antgroup.com">
-                    1st menu item
-                </a>
-            ),
+            label: <span>Settings</span>
         },
         {
             key: '2',
-            label: (
-                <a target="_blank" rel="noopener noreferrer" href="https://www.aliyun.com">
-                    2nd menu item (disabled)
-                </a>
-            ),
-            icon: <SmileOutlined />,
-            disabled: true,
-        },
-        {
-            key: '3',
-            label: (
-                <a target="_blank" rel="noopener noreferrer" href="https://www.luohanacademy.com">
-                    3rd menu item (disabled)
-                </a>
-            ),
-            disabled: true,
-        },
-        {
-            key: '4',
             danger: true,
-            label: 'a danger item',
+            label: <span onClick={() => signOut()}  >Sign out</span>,
         },
     ];
 
@@ -72,7 +52,7 @@ const AdminHeader = () => {
                         style={{ color: "unset", lineHeight: "0 !important", marginRight: 20 }}
                     >
                         <Space>
-                            Welcome Admin
+                            Welcome {session?.user?.email ?? ""}
                             <DownOutlined />
                         </Space>
                     </a>
