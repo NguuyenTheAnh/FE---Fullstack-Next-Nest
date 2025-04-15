@@ -4,36 +4,39 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { authenticate } from '@/utils/actions';
 import { useRouter } from 'next/navigation';
-import ModalReactive from './modalReactive';
+import ModalReactive from './modal.reactive';
 import { useState } from 'react';
+import ModalChangePassword from './modal.change.password';
 
 const Login = () => {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [userEmail, setUserEmail] = useState("");
 
+    const [changePassword, setChangePassword] = useState(false);
+
     const onFinish = async (values: any) => {
-        const { email, password } = values;
-        setUserEmail(""); // reset userEmail state
+        const { username, password } = values;
+        setUserEmail("");
         //trigger sign-in
-        const res = await authenticate(email, password);
-        console.log(">>> check res: ", res)
+        const res = await authenticate(username, password);
 
         if (res?.error) {
-            if (res?.code == 2) {
+            //error
+            if (res?.code === 2) {
                 setIsModalOpen(true);
-                setUserEmail(email);
+                setUserEmail(username);
                 return;
             }
             notification.error({
-                message: 'Error Login',
-                description: res.error
-            });
-        }
-        else {
+                message: "Error login",
+                description: res?.error
+            })
+
+        } else {
+            //redirect to /dashboard
             router.push('/dashboard');
         }
-
     };
 
     return (
@@ -55,7 +58,7 @@ const Login = () => {
                         >
                             <Form.Item
                                 label="Email"
-                                name="email"
+                                name="username"
                                 rules={[
                                     {
                                         required: true,
@@ -83,9 +86,16 @@ const Login = () => {
 
                             <Form.Item
                             >
-                                <Button type="primary" htmlType="submit">
-                                    Login
-                                </Button>
+                                <div style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center"
+                                }}>
+                                    <Button type="primary" htmlType="submit">
+                                        Login
+                                    </Button>
+                                    <Button type='link' onClick={() => setChangePassword(true)}>Quên mật khẩu ?</Button>
+                                </div>
                             </Form.Item>
                         </Form>
                         <Link href={"/"}><ArrowLeftOutlined /> Quay lại trang chủ</Link>
@@ -100,6 +110,10 @@ const Login = () => {
                 isModalOpen={isModalOpen}
                 setIsModalOpen={setIsModalOpen}
                 userEmail={userEmail}
+            />
+            <ModalChangePassword
+                isModalOpen={changePassword}
+                setIsModalOpen={setChangePassword}
             />
         </>
     )

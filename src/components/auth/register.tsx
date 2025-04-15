@@ -6,23 +6,21 @@ import Link from 'next/link';
 import { sendRequest } from '@/utils/api';
 import { useRouter } from 'next/navigation';
 
-
 const Register = () => {
-    const router = useRouter();
+    const router = useRouter()
 
     const onFinish = async (values: any) => {
-        const { email, password, name } = values; // get from form bellow
+        const { email, password, name } = values;
         const res = await sendRequest<IBackendRes<any>>({
-            method: "POST",
             url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/register`,
+            method: "POST",
             body: {
                 email, password, name
             }
-        });
+        })
         if (res?.data) {
-            router.push(`/verify/${res.data?._id}`);
-        }
-        else {
+            router.push(`/verify/${res?.data?._id}`);
+        } else {
             notification.error({
                 message: "Register error",
                 description: res?.message

@@ -1,74 +1,81 @@
-'use client';
-import { useHasMounted } from '@/utils/customHook';
-import { Button, Form, Input, Modal, notification, Steps } from 'antd';
-import React, { useEffect, useState } from 'react';
-import { LoadingOutlined, SmileOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
-import { sendRequest } from '@/utils/api';
+'use client'
+
+import { useHasMounted } from "@/utils/customHook";
+import { Button, Form, Input, Modal, notification, Steps } from "antd";
+import { SmileOutlined, SolutionOutlined, UserOutlined } from '@ant-design/icons';
+import { useEffect, useState } from "react";
+import { sendRequest } from "@/utils/api";
 
 const ModalReactive = (props: any) => {
     const { isModalOpen, setIsModalOpen, userEmail } = props;
     const [current, setCurrent] = useState(0);
+    const [form] = Form.useForm();
     const [userId, setUserId] = useState("");
 
-    const [form] = Form.useForm();
+    const hasMounted = useHasMounted();
+
 
     useEffect(() => {
         if (userEmail) {
-            form.setFieldsValue({ email: userEmail });
+            form.setFieldValue("email", userEmail)
         }
     }, [userEmail]);
 
-    const hasMounted = useHasMounted();
-    if (!hasMounted) return <></>
+    if (!hasMounted) return <></>;
 
-    const onFinishResend = async (values: any) => {
-        const { email } = values; // get from form bellow
+    const onFinishStep0 = async (values: any) => {
+        const { email } = values;
         const res = await sendRequest<IBackendRes<any>>({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/retry-active`,
             method: "POST",
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/resend`,
             body: {
                 email
             }
-        });
+        })
+
         if (res?.data) {
-            setUserId(res?.data?._id);
+            setUserId(res?.data?._id)
             setCurrent(1);
-        }
-        else {
+        } else {
             notification.error({
-                message: "Call APIs Error",
+                message: "Call APIs error",
                 description: res?.message
             })
         }
+
     }
-    const onFinishActive = async (values: any) => {
-        const { code } = values; // get from form bellow
-        const _id = userId;
+
+    const onFinishStep1 = async (values: any) => {
+        const { code } = values;
         const res = await sendRequest<IBackendRes<any>>({
+            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/check-code`,
             method: "POST",
-            url: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/verify`,
             body: {
-                _id, code
+                code, _id: userId
             }
-        });
+        })
 
         if (res?.data) {
             setCurrent(2);
-        }
-        else {
+        } else {
             notification.error({
-                message: "Verify error",
+                message: "Call APIs error",
                 description: res?.message
             })
         }
-    };
+
+    }
     return (
         <>
-            <Modal title="Kích hoạt tài khoản"
+            <Modal
+                title="Kích hoạt tài khoản"
                 open={isModalOpen}
                 onOk={() => setIsModalOpen(false)}
                 onCancel={() => setIsModalOpen(false)}
+                maskClosable={false}
                 footer={null}
+
+
             >
                 <Steps
                     current={current}
@@ -83,33 +90,32 @@ const ModalReactive = (props: any) => {
                             // status: 'finish',
                             icon: <SolutionOutlined />,
                         },
+
                         {
                             title: 'Done',
                             // status: 'wait',
                             icon: <SmileOutlined />,
                         },
                     ]}
-
                 />
                 {current === 0 &&
                     <>
-                        <div style={{ margin: "20px 0px" }}>
-                            <p>
-                                Tài khoản của bạn chưa được kích hoạt
-                            </p>
+
+                        <div style={{ margin: "20px 0" }}>
+                            <p>Tải khoản của bạn chưa được kích hoạt</p>
                         </div>
                         <Form
-                            form={form}
-                            name="basic"
-                            onFinish={onFinishResend}
+                            name="verify"
+                            onFinish={onFinishStep0}
                             autoComplete="off"
                             layout='vertical'
+                            form={form}
                         >
                             <Form.Item
                                 label=""
                                 name="email"
                             >
-                                <Input disabled />
+                                <Input disabled value={userEmail} />
                             </Form.Item>
                             <Form.Item
                             >
@@ -120,18 +126,19 @@ const ModalReactive = (props: any) => {
                         </Form>
                     </>
                 }
+
                 {current === 1 &&
                     <>
-                        <div style={{ margin: "20px 0px" }}>
-                            <p>
-                                Vui lòng nhập mã xác nhận
-                            </p>
+                        <div style={{ margin: "20px 0" }}>
+                            <p>Vui lòng nhập mã xác nhận</p>
                         </div>
+
                         <Form
-                            name="basic1"
-                            onFinish={onFinishActive}
+                            name="verify2"
+                            onFinish={onFinishStep1}
                             autoComplete="off"
                             layout='vertical'
+
                         >
                             <Form.Item
                                 label="Code"
@@ -154,16 +161,15 @@ const ModalReactive = (props: any) => {
                         </Form>
                     </>
                 }
+
                 {current === 2 &&
-                    <div style={{ margin: "20px 0px" }}>
-                        <p>
-                            Tài khoản của bạn đã được kích hoạt. Vui lòng đăng nhập lại
-                        </p>
+                    <div style={{ margin: "20px 0" }}>
+                        <p>Tải khoản của bạn đã được kích hoạt thành công. Vui lòng đăng nhập lại</p>
                     </div>
                 }
             </Modal>
         </>
-    );
-};
+    )
+}
 
 export default ModalReactive;
